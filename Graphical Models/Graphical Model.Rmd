@@ -1,0 +1,17 @@
+---
+title: "Graphical Model"
+author: "Aman Kumar Nayak"
+date: "9/5/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.height = 8,fig.width =16 )
+```
+
+
+**Appendix**
+```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```
+
+
