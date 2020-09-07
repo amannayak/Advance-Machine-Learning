@@ -9,9 +9,24 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE,fig.height = 8,fig.width =16 )
 ```
 
-Test Gargabe 
+***Question 1***
 
-jksdbk jabaskjdbf jbdf jahdsfkjhsdkfj sidjhfk jshdfkj j
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+library(bnlearn)
+
+asiaData = asia
+
+hc(asiaData, )
+
+
+```
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
 **Appendix**
 ```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
 ```
