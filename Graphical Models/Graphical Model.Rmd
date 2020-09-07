@@ -1,45 +1,9 @@
-<<<<<<< HEAD
----
+```
 title: "Graphical Model"
 author: "Aman Kumar Nayak"
 date: "9/5/2020"
 output: pdf_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,fig.height = 8,fig.width =16 )
 ```
-
-***Question 1***
-
-```{r, echo=FALSE, warning=FALSE , message=FALSE}
-library(bnlearn)
-
-asiaData = asia
-
-hc(asiaData, )
-
-
-```
-
-```{r, echo=FALSE, warning=FALSE , message=FALSE}
-
-
-```
-
-
-**Appendix**
-```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
-```
-
-
-=======
----
-title: "Graphical Model"
-author: "Aman Kumar Nayak"
-date: "9/5/2020"
-output: pdf_document
----
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,fig.height = 8,fig.width =16 )
@@ -66,21 +30,21 @@ library(Rgraphviz)
 
 **Data** : The asia data set contains the following variables:
 
-*D (dyspnoea), a two-level factor with levels yes and no.
+* D (dyspnoea), a two-level factor with levels yes and no.
 
-*T (tuberculosis), a two-level factor with levels yes and no.
+* T (tuberculosis), a two-level factor with levels yes and no.
 
-*L (lung cancer), a two-level factor with levels yes and no.
+* L (lung cancer), a two-level factor with levels yes and no.
 
-*B (bronchitis), a two-level factor with levels yes and no.
+* B (bronchitis), a two-level factor with levels yes and no.
 
-*A (visit to Asia), a two-level factor with levels yes and no.
+* A (visit to Asia), a two-level factor with levels yes and no.
 
-*S (smoking), a two-level factor with levels yes and no.
+* S (smoking), a two-level factor with levels yes and no.
 
-*X (chest X-ray), a two-level factor with levels yes and no.
+* X (chest X-ray), a two-level factor with levels yes and no.
 
-*E (tuberculosis versus lung cancer/bronchitis), a two-level factor with levels yes and no.
+* E (tuberculosis versus lung cancer/bronchitis), a two-level factor with levels yes and no.
 
 
 Hill Climbing Algorithm 
@@ -283,4 +247,3 @@ bnlearn::graphviz.plot(bn.hc5_noInit, main = "5 no init")
 ```
 
 
->>>>>>> 4b2290eeaa870bef1d93244d413959e4c0a3bff5
