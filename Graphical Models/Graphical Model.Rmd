@@ -253,10 +253,10 @@ Calculating inference for S (Smoking)
 
 #initiate network 
 initiate = bnlearn::empty.graph(nodes = c("D" , "T", "L", "B", "A",  "X", "E" , "S"))
-initiate = bnlearn::set.arc(initiate, from = "S" , to = "L" )
+initiate = bnlearn::set.arc(initiate, from = "T" , to = "D" )
 
 bn.hc = bnlearn::hc(asia , score = "aic" , restart = 10 , 
-                    #start = initiate
+                    start = initiate
                     )
 
 cat("Score Based Structure")
@@ -348,10 +348,56 @@ s = cpdist(fitting , nodes = "S" , evidence = TRUE , method = )
 table(s)
 ```
 
+Question 2 
 
+Prediction is completed 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
-#reattempted to see what exactly is happing in  case we are going in exact order of hint
+
+#creating DAG
+initiate = bnlearn::empty.graph(nodes = c("D" , "T", "L", "B", "A",  "X", "E" , "S"))
+initiate = bnlearn::set.arc(initiate, from = "T" , to = "D" )
+bn.hc = bnlearn::hc(asia , score = "aic" , restart = 10 , start = initiate )
+#fitting data to DAC 
+fitData = bn.fit(x = bn.hc , data =  train , method = "bayes")
+#converting to grain object and compiling
+compiled_Grain = compile(object = bnlearn::as.grain(fitData))
+
+#Prediction on Test Data except S 
+nodesName = colnames(test[-2])
+
+#testRowSet = as.vector(unname(unlist(test[1, ])))
+
+predForS = numeric(nrow(test))
+
+for(i in 1:nrow(test)){
+  
+  #nodes : A vector of nodes; those nodes for which the (conditional) distribution is requested.
+  #states : A vector of states (of the nodes given by 'nodes')
+  
+  States = as.vector(unname(unlist(test[i, -2])))
+  Evidence_Grain = gRain::setEvidence(object = compiled_Grain , 
+                                      nodes = nodesName , 
+                                      states = States  
+                                      )
+  
+  queryGrain = querygrain(object = Evidence_Grain , nodes = "S" , 
+                          #type = "joint"
+                          type = "marginal" )
+  
+  
+  predForS[i] = ifelse( queryGrain$S[1] < queryGrain$S[2] ,  "yes" , "no")
+
+  
+}
+
+
+propTable = prop.table(table(test$S , predForS))
+
+resProb = sum(diag(propTable))
+
+
+
 ```
 
 
