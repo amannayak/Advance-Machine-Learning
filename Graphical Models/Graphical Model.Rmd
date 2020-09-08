@@ -56,7 +56,7 @@ Hill Climbing Algorithm
 
 #graph without any inital structure is used here 
 #field start is set as null
-bn.hc = hc(asia , score = "aic" , restart = 5)
+bn.hc1 = hc(asia , score = "aic" , restart = 0)
 # cat("Network with parameter Score = AIC and Restart = 5")
 # cat("\n")
 # print(bn.hc)
@@ -74,7 +74,7 @@ initiate = bnlearn::empty.graph(nodes = c("D" , "T", "L", "B", "A", "S", "X", "E
 
 #initiate = bnlearn::compare(bn.hc, bn.hc2 , arcs = TRUE)
 
-initiate = bnlearn::set.arc(initiate, from = "A" , to = "X" )
+initiate = bnlearn::set.arc(initiate, from = "A" , to = "S" )
 
 
 #using same config except different score methods
@@ -121,7 +121,7 @@ bn.hc5_noInit = bnlearn::hc(asia, score = "bic" , restart = 1
 #library(qgraph)
 
 par(mfrow = c(1, 3))
-bnlearn::graphviz.plot(bn.hc , main = "1")
+bnlearn::graphviz.plot(bn.hc1 , main = "1")
 bnlearn::graphviz.plot(bn.hc2, main = "2")
 bnlearn::graphviz.plot(bn.hc3, main = "3")
 
@@ -202,7 +202,7 @@ bn.hc5_noInit = bnlearn::hc(asia, score = "bic" , restart = 1
 
 ```
 
-Set 2 just to check if rerun is changing graphical models 
+Set 2 just to check if re-run is changing graphical models 
 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
@@ -227,19 +227,112 @@ bnlearn::graphviz.plot(bn.hc5_noInit, main = "5 no init")
 ```
 
 
+***Question 2***
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
+asiaData = bnlearn::asia
+
+#Fetching 80% of Data 
+n = dim(asiaData)[1]
+suppressWarnings(RNGversion("3.5.9"))
+set.seed(12345)
+id = sample(1:n , floor(n*0.8))
+train = asiaData[id,]
+test = asiaData[-id , ]
+
+```
+
+Calculating inference for S (Smoking)
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+#Inference Part 
+
+#creating object of class bn 
+
+#initiate network 
+initiate = bnlearn::empty.graph(nodes = c("D" , "T", "L", "B", "A",  "X", "E" , "S"))
+initiate = bnlearn::set.arc(initiate, from = "D" , to = "S" )
+bn.hc = bnlearn::hc(asia , score = "aic" , restart = 5 , start = initiate)
+
+cat("Score Based Structure")
+bn.hc
+cat("\n")
+cat("Graph associated with a Bayesian network ")
+cat("\n")
+bnlearn::graphviz.plot(bn.hc, main = "Bayesian Network" 
+                       #,  layout = "neato",
+                       ,highlight = list(nodes = "S" ,  col = "tomato", fill = "orange") )
+cat("\n")
+
+#fit
+cat("Fitting Parameter of Bayesian Model ")
+
+#*****
+
+fitting = bn.fit(x = bn.hc , data =  train , method = "bayes" , debug = TRUE)
+
+#*****
+cat("\n")
+
+cat("Bayesian network as a list of conditional probability tables")
+
+#grain object 
+cat("\n")
+grainObject = bnlearn::as.grain(fitting)
+cat("\n")
+grainObject
+cat("\n")
 
 
+#compile conditional probabilities 
+comp = compile(object = grainObject)
+
+#calling setfinding
+
+#findings = setFinding(grainObject)
 
 
 
 ```
 
+
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
 ```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
 
 
 **Appendix**
