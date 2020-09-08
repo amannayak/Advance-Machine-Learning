@@ -1,9 +1,9 @@
-```
+---
 title: "Graphical Model"
 author: "Aman Kumar Nayak"
 date: "9/5/2020"
 output: pdf_document
-```
+---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,fig.height = 8,fig.width =16 )
@@ -253,8 +253,11 @@ Calculating inference for S (Smoking)
 
 #initiate network 
 initiate = bnlearn::empty.graph(nodes = c("D" , "T", "L", "B", "A",  "X", "E" , "S"))
-initiate = bnlearn::set.arc(initiate, from = "D" , to = "S" )
-bn.hc = bnlearn::hc(asia , score = "aic" , restart = 5 , start = initiate)
+initiate = bnlearn::set.arc(initiate, from = "S" , to = "L" )
+
+bn.hc = bnlearn::hc(asia , score = "aic" , restart = 10 , 
+                    #start = initiate
+                    )
 
 cat("Score Based Structure")
 bn.hc
@@ -271,7 +274,13 @@ cat("Fitting Parameter of Bayesian Model ")
 
 #*****
 
-fitting = bn.fit(x = bn.hc , data =  train , method = "bayes" , debug = TRUE)
+fitting = bn.fit(x = bn.hc , data =  train , method = "bayes" 
+                 #, debug = TRUE
+                 )
+
+#cat("Conditional Probability of node S")
+
+#bn.fit.barchart(fitting$S)
 
 #*****
 cat("\n")
@@ -282,41 +291,67 @@ cat("Bayesian network as a list of conditional probability tables")
 cat("\n")
 grainObject = bnlearn::as.grain(fitting)
 cat("\n")
-grainObject
+#grainObject
 cat("\n")
 
 
 #compile conditional probabilities 
-comp = compile(object = grainObject)
+compiled = compile(object = grainObject)
 
 #calling setfinding
 
-#findings = setFinding(grainObject)
+findings_Yes = setFinding(grainObject , nodes = c("S") , states = c("yes" ))
+findings_No = setFinding(grainObject , nodes = c("S") , states = c("no"))
+
+#Stating Evidence 
+
+cat("Under selected model Probability of observing this evidence for S = Yes is ")
+cat("\n")
+pEvidence(findings_Yes)
+cat("\n")
+cat("Under selected model Probability of observing this evidence for S = No is ")
+cat("\n")
+pEvidence(findings_No)
+cat("\n")
 
 
+#Querying Network 
+querygrain(findings_Yes , nodes = c("L" , "A" , "D"))
 
 ```
 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
+#Furthur Exploration with querygrain 
 
+tt = querygrain(grainObject , type = "joint"      )
+tt
 ```
 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
+prob_table = prop.table(tt)
+
+tb = table(prob_table)
+
+
 ```
 
 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
+#querying on data 
 
+s = cpdist(fitting , nodes = "S" , evidence = TRUE , method = )
+
+table(s)
 ```
 
 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
-
+#reattempted to see what exactly is happing in  case we are going in exact order of hint
 ```
 
 
