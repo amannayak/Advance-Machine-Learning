@@ -403,27 +403,34 @@ confusionMatrix
 cat("\n")
 ```
 
-
-Calculating true result 
+Writing common function for Fit and Predict 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
-fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" , Method = "Bayes"){
+fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" , Method = "bayes" , markovB = FALSE , markovObj = NULL){
   
   #fit bn model to training Data 
-  modelFit = bnlearn::bn.fit(x = DAGraph.bnObject , data =trainData , method = Method)
+  modelFit = bnlearn::bn.fit(x = DAGraph.bnObject , data = trainData , method = Method)
 
   # The main data structure in gRain is the grain class, which stores a fitted Bayesian network as a list of 
   # conditional probability tables (much like bnlearn's bn. fit objects) and makes it possible for setEvidence() 
-  # and querygrain() to perform posterior inference via belief propagation.  
+  # and querygrain() to perform posterior inference via belief propagation.  #via docs 
   
   # #converting to grain object and compiling
   compiled_Grain = compile(object = bnlearn::as.grain(modelFit))
   
   
   #fecth index of predNode in order to remove that while making predictions 
-  indx = which(colnames(trainData) == predNode)
-  nodesName = colnames(test[-indx])
+  
+  
+  if(markovB == FALSE)
+    {
+      indx = which(colnames(trainData) == predNode)
+      nodesName = colnames(test[-indx])
+    }else{
+      nodesName = as.vector(markovObj)
+    }
+  
   prediction = numeric(nrow(testData))
     
   for(i in 1:nrow(testData))
@@ -433,25 +440,35 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" , 
     #nodes : A vector of nodes; those nodes for which the (conditional) distribution is requested.
     #states : A vector of states (of the nodes given by 'nodes')
     
-    #fetching ith row of data set to predicted without target 
-    testDataRow.State = as.vector(unname(unlist(test[i, -2])))
+    #fetching ith row of data set to predicted without target  
+    #extending logic for markov blanket case model 
+    
+    if(markovB == FALSE){
+      testDataRow.State = as.vector(unname(unlist(test[i, -indx])))
+      
+    }else{
+      testDataRow.State = as.vector(unname(unlist(test[i, nodesName])))
+    }
+    
+    # if(i == 1)
+    #   print(testDataRow.State)
     
     Evidence_Grain = gRain::setEvidence(object = compiled_Grain , 
                                         nodes = nodesName , 
                                         states = testDataRow.State  
                                         )
     
-    queryGrain = querygrain(object = Evidence_Grain , nodes = "S" , 
+    queryGrain = querygrain(object = Evidence_Grain , nodes = predNode , 
                             #type = "joint"
                             type = "marginal" )
     
     
-    prediction[i] = ifelse( queryGrain$S[1] < queryGrain$S[2] ,  "yes" , "no")
+    prediction[i] = ifelse(queryGrain$S["yes"] > queryGrain$S["no"]  ,  "yes" , "no")
 
   }#for
   
   #confusion matrix
-  confusionMatrix = prop.table(table(test$S , predForS))
+  confusionMatrix = prop.table(table(test$S , prediction))
   
   return(confusionMatrix)
   
@@ -463,7 +480,12 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" , 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 #plot both Learned and True Graph
+#creating DAG
+initiate = bnlearn::empty.graph(nodes = c("D" , "T", "L", "B", "A",  "X", "E" , "S"))
+initiate = bnlearn::set.arc(initiate, from = "T" , to = "D" )
+bn.hc = bnlearn::hc(asia , score = "aic" , restart = 10 , start = initiate )
 
+#True
 dag.True  = bnlearn::model2network(string = "[A][S][T|A][L|S][B|S][D|B:E][E|T:L][X|E]")
 
 
@@ -484,29 +506,58 @@ bnlearn::graphviz.plot(dag.True, main = "True Asia Data BN"
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 customModel = fnPredict(trainData = train , testData = test , DAGraph.bnObject = bn.hc , predNode = "S" , Method = "bayes")
+cat("\n")
+cat("Confusion Matrix for Learned")
+cat("\n")
 customModel
+cat("\n")
 
 
 trueModel = fnPredict(trainData = train , testData = test , DAGraph.bnObject = dag.True , predNode = "S" , Method = "bayes")
+cat("\n")
+cat("Confusion Matrix for True DAG")
+cat("\n")
 trueModel
+cat("\n")
+```
+
+
+***Question 3***
+
+The Markov blanket of a node Xi, the set of nodes that completely separates Xi from the rest of the graph. Generally speaking, it is the
+set of nodes that includes all the knowledge needed to do inference on Xi, from estimation to hypothesis testing to prediction: the parents of
+Xi, the children of Xi, and those children’s other parents. 
+
+Ref : Doc 
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+#calculating MarkovBlanket of S 
+bn.mb = mb(bn.hc , node = "S")
+
+pred = fnPredict(trainData = train , testData = test , DAGraph.bnObject = bn.hc 
+                 , predNode = "S" , Method = "mle" , markovB = TRUE , 
+                 markovObj = bn.mb)
+
+cat("Confusion Matrix for Markov Blanket of S")
+cat("\n")
+pred
+cat("\n")
+  
+  
+
+```
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
 
 ```
 
 
 
-```{r, echo=FALSE, warning=FALSE , message=FALSE}
-
-```
-
-
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
-```
-
-
-
-```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
 ```
 
