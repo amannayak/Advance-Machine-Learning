@@ -408,21 +408,10 @@ Calculating true result
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
-dag  = bnlearn::model2network(string = "[A][S][T|A][L|S][B|S][D|B:E][E|T:L][X|E]")
-bnlearn::graphviz.plot(dag, main = "True Asia Data BN" 
-                       #,  layout = "neato",
-                       ,highlight = list(nodes = "S" ,  col = "tomato", 
-                                         fill = "orange") )
-
-trueFit = bn.fit(x = dag , data = train ,  method = "bayes")
-
-
-
-
-fnPredict = function(trainData , testData , bnObject , predNode = "S" , Method = "Bayes"){
+fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" , Method = "Bayes"){
   
   #fit bn model to training Data 
-  modelFit = bnlearn::bn.fit(x = bnObject , data =trainData , method = Method)
+  modelFit = bnlearn::bn.fit(x = DAGraph.bnObject , data =trainData , method = Method)
 
   # The main data structure in gRain is the grain class, which stores a fitted Bayesian network as a list of 
   # conditional probability tables (much like bnlearn's bn. fit objects) and makes it possible for setEvidence() 
@@ -445,11 +434,11 @@ fnPredict = function(trainData , testData , bnObject , predNode = "S" , Method =
     #states : A vector of states (of the nodes given by 'nodes')
     
     #fetching ith row of data set to predicted without target 
-    testDataRow = as.vector(unname(unlist(test[i, -2])))
+    testDataRow.State = as.vector(unname(unlist(test[i, -2])))
     
     Evidence_Grain = gRain::setEvidence(object = compiled_Grain , 
                                         nodes = nodesName , 
-                                        states = testDataRow  
+                                        states = testDataRow.State  
                                         )
     
     queryGrain = querygrain(object = Evidence_Grain , nodes = "S" , 
@@ -459,12 +448,47 @@ fnPredict = function(trainData , testData , bnObject , predNode = "S" , Method =
     
     prediction[i] = ifelse( queryGrain$S[1] < queryGrain$S[2] ,  "yes" , "no")
 
-  }
+  }#for
   
-}
+  #confusion matrix
+  confusionMatrix = prop.table(table(test$S , predForS))
   
+  return(confusionMatrix)
   
+}#fnPredict
   
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+#plot both Learned and True Graph
+
+dag.True  = bnlearn::model2network(string = "[A][S][T|A][L|S][B|S][D|B:E][E|T:L][X|E]")
+
+
+par(mfrow = c(1,2))
+bnlearn::graphviz.plot(bn.hc, main = "Learned Asia Data BN" 
+                       #,  layout = "neato",
+                       ,highlight = list(nodes = "S" ,  col = "tomato", 
+                                         fill = "orange") )
+bnlearn::graphviz.plot(dag.True, main = "True Asia Data BN" 
+                       #,  layout = "neato",
+                       ,highlight = list(nodes = "S" ,  col = "tomato", 
+                                         fill = "orange") )
+
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+customModel = fnPredict(trainData = train , testData = test , DAGraph.bnObject = bn.hc , predNode = "S" , Method = "bayes")
+customModel
+
+
+trueModel = fnPredict(trainData = train , testData = test , DAGraph.bnObject = dag.True , predNode = "S" , Method = "bayes")
+trueModel
 
 ```
 
@@ -473,6 +497,26 @@ fnPredict = function(trainData , testData , bnObject , predNode = "S" , Method =
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
 ```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
 
 
 
