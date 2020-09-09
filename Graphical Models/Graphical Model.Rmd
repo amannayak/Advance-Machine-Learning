@@ -392,19 +392,79 @@ for(i in 1:nrow(test)){
 }
 
 
-propTable = prop.table(table(test$S , predForS))
+confusionMatrix = prop.table(table(test$S , predForS))
 
-resProb = sum(diag(propTable))
+#resProb = sum(diag(propTable))
+cat("\n")
+cat("confusion matrix")
 
-
-
+cat("\n")
+confusionMatrix
+cat("\n")
 ```
 
 
-
-
+Calculating true result 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+dag  = bnlearn::model2network(string = "[A][S][T|A][L|S][B|S][D|B:E][E|T:L][X|E]")
+bnlearn::graphviz.plot(dag, main = "True Asia Data BN" 
+                       #,  layout = "neato",
+                       ,highlight = list(nodes = "S" ,  col = "tomato", 
+                                         fill = "orange") )
+
+trueFit = bn.fit(x = dag , data = train ,  method = "bayes")
+
+
+
+
+fnPredict = function(trainData , testData , bnObject , predNode = "S" , Method = "Bayes"){
+  
+  #fit bn model to training Data 
+  modelFit = bnlearn::bn.fit(x = bnObject , data =trainData , method = Method)
+
+  # The main data structure in gRain is the grain class, which stores a fitted Bayesian network as a list of 
+  # conditional probability tables (much like bnlearn's bn. fit objects) and makes it possible for setEvidence() 
+  # and querygrain() to perform posterior inference via belief propagation.  
+  
+  # #converting to grain object and compiling
+  compiled_Grain = compile(object = bnlearn::as.grain(modelFit))
+  
+  
+  #fecth index of predNode in order to remove that while making predictions 
+  indx = which(colnames(trainData) == predNode)
+  nodesName = colnames(test[-indx])
+  prediction = numeric(nrow(testData))
+    
+  for(i in 1:nrow(testData))
+  {
+  
+    #In setEvidence function 
+    #nodes : A vector of nodes; those nodes for which the (conditional) distribution is requested.
+    #states : A vector of states (of the nodes given by 'nodes')
+    
+    #fetching ith row of data set to predicted without target 
+    testDataRow = as.vector(unname(unlist(test[i, -2])))
+    
+    Evidence_Grain = gRain::setEvidence(object = compiled_Grain , 
+                                        nodes = nodesName , 
+                                        states = testDataRow  
+                                        )
+    
+    queryGrain = querygrain(object = Evidence_Grain , nodes = "S" , 
+                            #type = "joint"
+                            type = "marginal" )
+    
+    
+    prediction[i] = ifelse( queryGrain$S[1] < queryGrain$S[2] ,  "yes" , "no")
+
+  }
+  
+}
+  
+  
+  
 
 ```
 
