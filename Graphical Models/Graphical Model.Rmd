@@ -324,7 +324,7 @@ querygrain(findings_Yes , nodes = c("L" , "A" , "D"))
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 #Furthur Exploration with querygrain 
 
-tt = querygrain(grainObject , type = "joint"      )
+tt = querygrain(grainObject , type = "joint")
 tt
 ```
 
@@ -419,7 +419,8 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" ,
   # and querygrain() to perform posterior inference via belief propagation.  #via docs 
   
   # #converting to grain object and compiling
-  compiled_Grain = compile(object = bnlearn::as.grain(modelFit))
+  compiled_Grain = gRbase::compile(object = bnlearn::as.grain(modelFit))
+  #compiled_Grain = bnlearn::as.grain(modelFit)
   
   
   #fecth index of predNode in order to remove that while making predictions 
@@ -427,14 +428,17 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" ,
   
   if(markovB == FALSE)
     {
-      indx = which(colnames(trainData) == predNode)
-      nodesName = colnames(test[-indx])
+      indx = which(colnames(testData) == predNode)
+      nodesName = colnames(testData[-indx])
     }else{
       nodesName = as.vector(markovObj)
     }
   
   prediction = numeric(nrow(testData))
     
+  dfPredTest = data.frame(matrix(data = NA , ncol = 2 , nrow = nrow(testData)))
+  
+  
   for(i in 1:nrow(testData))
   {
   
@@ -446,10 +450,10 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" ,
     #extending logic for markov blanket case model 
     
     if(markovB == FALSE){
-      testDataRow.State = as.vector(unname(unlist(test[i, -indx])))
+      testDataRow.State = as.vector(unname(unlist(testData[i, -indx])))
       
     }else{
-      testDataRow.State = as.vector(unname(unlist(test[i, nodesName])))
+      testDataRow.State = as.vector(unname(unlist(testData[i, nodesName])))
     }
     
     # if(i == 1)
@@ -460,14 +464,17 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" ,
                                         states = testDataRow.State  
                                         )
     
-    queryGrain = querygrain(object = Evidence_Grain , nodes = predNode , 
+    queryGrain = querygrain(object = Evidence_Grain,
+                            #object = compiled_Grain , evidence = Evidence_Grain ,
+                             nodes = predNode , 
                             #type = "joint"
-                            type = "marginal" )
+                            type = "marginal" 
+                            )
     
     qG = as.vector(unname(unlist(queryGrain)))
     
     #qG[1] = No and qG[2] = Yes
-    
+    dfPredTest[i,] = qG
     prediction[i] = ifelse(qG[2] > qG[1]  ,  "yes" , "no")
 
   }#for
@@ -475,7 +482,7 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" ,
   #confusion matrix
   confusionMatrix = prop.table(table(test$S , prediction))
   
-  return(confusionMatrix)
+  return(list("Cmat" = confusionMatrix , "df" = dfPredTest))
   
 }#fnPredict
   
@@ -495,7 +502,7 @@ dag.True  = bnlearn::model2network(string = "[A][S][T|A][L|S][B|S][D|B:E][E|T:L]
 
 
 par(mfrow = c(1,2))
-bnlearn::graphviz.plot(bn.hc, main = "Learned Asia Data BN" 
+bnlearn::graphviz.plot(bn.hc2, main = "Learned Asia Data BN" 
                        #,  layout = "neato",
                        ,highlight = list(nodes = "S" ,  col = "tomato", 
                                          fill = "orange") )
@@ -509,12 +516,25 @@ bnlearn::graphviz.plot(dag.True, main = "True Asia Data BN"
 ```
 
 
-```{r, echo=FALSE, warning=FALSE , message=FALSE}
-customModel = fnPredict(trainData = train , testData = test , DAGraph.bnObject = bn.hc , predNode = "S" , Method = "bayes")
+```{r, echo=FALSE , message=FALSE}
+
+asiaData = bnlearn::asia
+
+#Fetching 80% of Data 
+n = dim(asiaData)[1]
+suppressWarnings(RNGversion("3.5.9"))
+set.seed(12345)
+id = sample(1:n , floor(n*0.8))
+#id = seq(1 , 4000)
+train = asiaData[id,]
+test = asiaData[-id , ]
+
+
+customModel = fnPredict(trainData = train , testData = test , DAGraph.bnObject = bn.hc2 , predNode = "S" , Method = "bayes")
 cat("\n")
 cat("Confusion Matrix for Learned")
 cat("\n")
-customModel
+customModel$Cmat
 cat("\n")
 
 
@@ -522,7 +542,7 @@ trueModel = fnPredict(trainData = train , testData = test , DAGraph.bnObject = d
 cat("\n")
 cat("Confusion Matrix for True DAG")
 cat("\n")
-trueModel
+trueModel$Cmat
 cat("\n")
 ```
 
