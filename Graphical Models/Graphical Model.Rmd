@@ -407,13 +407,15 @@ Writing common function for Fit and Predict
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
-fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" , Method = "bayes" , markovB = FALSE , markovObj = NULL){
+fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" ,
+                     Method = "bayes" , markovB = FALSE , markovObj = NULL){
   
   #fit bn model to training Data 
-  modelFit = bnlearn::bn.fit(x = DAGraph.bnObject , data = trainData , method = Method)
+  modelFit = bnlearn::bn.fit(x = DAGraph.bnObject , data = trainData ,
+                             method = Method)
 
   # The main data structure in gRain is the grain class, which stores a fitted Bayesian network as a list of 
-  # conditional probability tables (much like bnlearn's bn. fit objects) and makes it possible for setEvidence() 
+  # conditional probability tables (much like bnlearn's bn.fit objects) and makes it possible for setEvidence() 
   # and querygrain() to perform posterior inference via belief propagation.  #via docs 
   
   # #converting to grain object and compiling
@@ -462,8 +464,11 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" , 
                             #type = "joint"
                             type = "marginal" )
     
+    qG = as.vector(unname(unlist(queryGrain)))
     
-    prediction[i] = ifelse(queryGrain$S["yes"] > queryGrain$S["no"]  ,  "yes" , "no")
+    #qG[1] = No and qG[2] = Yes
+    
+    prediction[i] = ifelse(qG[2] > qG[1]  ,  "yes" , "no")
 
   }#for
   
@@ -547,6 +552,9 @@ cat("\n")
   
 
 ```
+
+
+***Question 4***
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
