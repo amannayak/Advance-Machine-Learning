@@ -435,8 +435,9 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" ,
     }
   
   prediction = numeric(nrow(testData))
-    
-  dfPredTest = data.frame(matrix(data = NA , ncol = 2 , nrow = nrow(testData)))
+   
+  #Added to see changing probabilites such that we can validate confusion matrix 
+  #dfPredTest = data.frame(matrix(data = NA , ncol = 2 , nrow = nrow(testData)))
   
   
   for(i in 1:nrow(testData))
@@ -474,7 +475,9 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" ,
     qG = as.vector(unname(unlist(queryGrain)))
     
     #qG[1] = No and qG[2] = Yes
-    dfPredTest[i,] = qG
+    #Added for visual validation of result @removed from final result
+    #dfPredTest[i,] = qG
+    
     prediction[i] = ifelse(qG[2] > qG[1]  ,  "yes" , "no")
 
   }#for
@@ -482,7 +485,8 @@ fnPredict = function(trainData , testData , DAGraph.bnObject , predNode = "S" ,
   #confusion matrix
   confusionMatrix = prop.table(table(test$S , prediction))
   
-  return(list("Cmat" = confusionMatrix , "df" = dfPredTest))
+  #return(list("Cmat" = confusionMatrix , "df" = dfPredTest))
+  return(confusionMatrix)
   
 }#fnPredict
   
@@ -534,7 +538,7 @@ customModel = fnPredict(trainData = train , testData = test , DAGraph.bnObject =
 cat("\n")
 cat("Confusion Matrix for Learned")
 cat("\n")
-customModel$Cmat
+customModel
 cat("\n")
 
 
@@ -542,7 +546,7 @@ trueModel = fnPredict(trainData = train , testData = test , DAGraph.bnObject = d
 cat("\n")
 cat("Confusion Matrix for True DAG")
 cat("\n")
-trueModel$Cmat
+trueModel
 cat("\n")
 ```
 
@@ -560,13 +564,13 @@ Ref : Doc
 #calculating MarkovBlanket of S 
 bn.mb = mb(bn.hc , node = "S")
 
-pred = fnPredict(trainData = train , testData = test , DAGraph.bnObject = bn.hc 
+MarkovBNPred = fnPredict(trainData = train , testData = test , DAGraph.bnObject = bn.hc 
                  , predNode = "S" , Method = "mle" , markovB = TRUE , 
                  markovObj = bn.mb)
 
 cat("Confusion Matrix for Markov Blanket of S")
 cat("\n")
-pred
+MarkovBNPred
 cat("\n")
   
   
@@ -576,8 +580,25 @@ cat("\n")
 
 ***Question 4***
 
-```{r, echo=FALSE, warning=FALSE , message=FALSE}
+Naive Bayes Assumption : In Naive Bayes, we use Bayes Theorem with strong Naive assumption we consider independence between features. 
+Since here we have features namely "D" , "T", "L", "B", "A",  "X", "E" while target is "S", we will assume all features are independent
+of each other. 
 
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+NaiveBayesBN = bnlearn::empty.graph(nodes = c("D" , "T", "L", "B", "A",  "X", "E" , "S"))
+NaiveBayesBN = bnlearn::set.arc(NaiveBayesBN, from = "S" , to = "D" )
+NaiveBayesBN = bnlearn::set.arc(NaiveBayesBN, from = "S" , to = "T" )
+NaiveBayesBN = bnlearn::set.arc(NaiveBayesBN, from = "S" , to = "L" )
+NaiveBayesBN = bnlearn::set.arc(NaiveBayesBN, from = "S" , to = "B" )
+NaiveBayesBN = bnlearn::set.arc(NaiveBayesBN, from = "S" , to = "A" )
+NaiveBayesBN = bnlearn::set.arc(NaiveBayesBN, from = "S" , to = "X" )
+NaiveBayesBN = bnlearn::set.arc(NaiveBayesBN, from = "S" , to = "E" )
+
+bnlearn::graphviz.plot(NaiveBayesBN, main = "Naive Bayes BN" 
+                       ,highlight = list(nodes = "S" ,  col = "tomato", 
+                                        fill = "orange") )
 
 ```
 
@@ -586,9 +607,20 @@ cat("\n")
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
+NaiveBayesBNPred = fnPredict(trainData = train , testData = test , DAGraph.bnObject = NaiveBayesBN 
+                 , predNode = "S" , Method = "mle" , markovB = FALSE  )
+
+cat("Confusion Matrix for Naive Bayes BN for S")
+cat("\n")
+NaiveBayesBNPred
+cat("\n")
+
 
 ```
 
+***Question 5***
+
+Written in FinalFile to be Submitted. 
 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
