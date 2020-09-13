@@ -620,7 +620,7 @@ cat("\n")
 
 ***Question 5***
 
-Written in FinalFile to be Submitted. 
+Written in Final File to be Submitted. 
 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
