@@ -36,3 +36,23 @@ The asia data set contains the following variables:
 * X (chest X-ray), a two-level factor with levels yes and no.
 
 * E (tuberculosis versus lung cancer/bronchitis), a two-level factor with levels yes and no.
+
+
+
+##Task 2
+
+**Hidden Markov Model**
+
+Hidden Markov Model (HMM) is a statistical Markov model in which the system being modeled is assumed to be a Markov process – call it {\displaystyle X}X – with unobservable ("hidden") states. HMM assumes that there is another process {\displaystyle Y}Y whose behavior "depends" on {\displaystyle X}X. The goal is to learn about {\displaystyle X}X by observing {\displaystyle Y}Y. HMM stipulates that, for each time instance {\displaystyle n_{0}}n_{0}, the conditional probability distribution of {\displaystyle Y_{n_{0}}}{\displaystyle Y_{n_{0}}} given the history {\displaystyle \{X_{n}=x_{n}\}_{n\leq n_{0}}}{\displaystyle \{X_{n}=x_{n}\}_{n\leq n_{0}}} must not depend on {\displaystyle \{x_{n}\}_{n<n_{0}}}{\displaystyle \{x_{n}\}_{n<n_{0}}}.
+
+Hidden Markov models are known for their applications to reinforcement learning and temporal pattern recognition such as speech, handwriting, gesture recognition, part-of-speech tagging, musical score following, partial discharges and bioinformatics.
+
+Let {\displaystyle X_{n}}X_{n} and {\displaystyle Y_{n}}Y_{n} be discrete-time stochastic processes and {\displaystyle n\geq 1}n\geq 1. The pair {\displaystyle (X_{n},Y_{n})}{\displaystyle (X_{n},Y_{n})} is a hidden markov model if
+
+* {\displaystyle X_{n}}X_{n} is a Markov process and is not directly observable ("hidden");
+* {\displaystyle \operatorname {\mathbf {P} } {\bigl (}Y_{n}\in A\ {\bigl |}\ X_{1}=x_{1},\ldots ,X_{n}=x_{n}{\bigr )}=\operatorname {\mathbf {P} } {\bigl (}Y_{n}\in A\ {\bigl |}\ X_{n}=x_{n}{\bigr )},}{\displaystyle \operatorname {\mathbf {P} } {\bigl (}Y_{n}\in A\ {\bigl |}\ X_{1}=x_{1},\ldots ,X_{n}=x_{n}{\bigr )}=\operatorname {\mathbf {P} } {\bigl (}Y_{n}\in A\ {\bigl |}\ X_{n}=x_{n}{\bigr )},}
+for every {\displaystyle n\geq 1,}{\displaystyle n\geq 1,} {\displaystyle x_{1},\ldots ,x_{n},}{\displaystyle x_{1},\ldots ,x_{n},} and an arbitrary (measurable) set {\displaystyle A}A.
+
+Terminology
+The states of the process {\displaystyle X_{n}}X_{n} are called hidden states, and {\displaystyle \operatorname {\mathbf {P} } {\bigl (}Y_{n}\in A\ {\bigl |}\ X_{n}=x_{n}{\bigr )}}{\displaystyle \operatorname {\mathbf {P} } {\bigl (}Y_{n}\in A\ {\bigl |}\ X_{n}=x_{n}{\bigr )}} is called emission probability or output probability.
+
