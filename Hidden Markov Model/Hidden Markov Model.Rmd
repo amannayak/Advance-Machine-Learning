@@ -1,0 +1,47 @@
+---
+title: "Hidden Markov model"
+author: "Aman Kumar Nayak"
+date: "9/17/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+```
+
+**Appendix**
+```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```
