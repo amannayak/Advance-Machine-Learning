@@ -1,0 +1,80 @@
+---
+title: "Hidden Markov Lab2"
+author: "Aman Kumar Nayak"
+date: "9/20/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE,tidy=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+***Task***
+
+Model the behavior of a robot that walks around a ring. The ring is divided into 10 sectors. At any given time point, the robot is in one of the sectors and decides with equal probability to stay in that sector or move to the next sector. You do not have direct observation of the robot. However, the robot is equipped with a tracking device that you can access. The device is not very accurate though: If the robot is in the sector i, then the device will report that the robot is in the sectors [i − 2, i + 2] with equal probability.
+
+
+***Question 1***
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+#Building Hidden Markov Model 
+library(HMM)
+
+States =  1:10
+Symbols = 1:10
+
+
+hmm = HMM::initHMM(States , Symbols)
+```
+
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+#Hidden Markov Model
+
+hmm
+
+```
+*Question 2*
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+suppressWarnings(RNGversion("3.5.1"))
+set.seed(12345)
+nSim = 100
+simulateHmm = simHMM(hmm , nSim)
+```
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+
+cat("Simulated Values")
+cat("\n")
+simulateHmm
+cat("\n")
+```
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+library(ggplot2)
+
+ggplot() + 
+  geom_line(aes(x = 1 : nSim , y = simulateHmm$states , color = "States"))+
+  geom_line(aes(x = 1 : nSim , y = simulateHmm$observation , color = "Observations"))+
+  ylim(-1 , 12)
+  
+```
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+
+```
+
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+
+```
+
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+
+```
+
+**Appendix**
+```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```
