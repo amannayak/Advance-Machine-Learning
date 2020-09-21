@@ -2,7 +2,9 @@
 title: "Hidden Markov Lab2"
 author: "Aman Kumar Nayak"
 date: "9/20/2020"
-output: pdf_document
+output: 
+  pdf_document:
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE,tidy=TRUE}
@@ -24,13 +26,54 @@ library(HMM)
 States =  1:10
 Symbols = 1:10
 
+#Since 
+#the robot is in one of the sectors and decides with equal probability to stay in that sector or move to the next sector.
+#we get probability of staying as 0.5 and probability of moving as 0.5
 
-hmm = HMM::initHMM(States , Symbols)
+transProbs = 0.5*diag(10) 
+for(i in 1:ncol(transProbs))
+{
+    if(i != ncol(transProbs))
+    {
+      transProbs[i+1 , i]  = 0.5
+    }else{
+      transProbs[1 , i]  = 0.5
+    }
+}
+
+
+colnames(transProbs) = States
+rownames(transProbs) = States
+
+
+#emissionProbs
+#If the robot is in the sector i, then the device will report that the robot is in the sectors [i − 2, i + 2] with equal probability.
+#so robot can be in any sector i with probability of 0.2 (5/10)
+
+emissionProbs = 0.2 * diag(10)
+n = ncol(emissionProbs)
+for(i in 1:n){
+  if(i-1 == 0) {
+    Col_Indx = c((n-1) , n , i , i+1 , i+2)
+  }else if(i-1 ==  1){
+    Col_Indx = c( n , i-1 ,i , i+1 , i+2)
+  }else if(i+1 == n){
+    Col_Indx = c( i-2 ,i-1 ,i , i+1 , 1)
+  }else if(i+1 > n) {
+    Col_Indx = c( i-2 ,i-1 ,i , 1 , 2)
+  }else{
+    Col_Indx = c( i-2 , i-1 ,i , i+1 , i+2)
+  }
+  emissionProbs[i , Col_Indx] = 0.2
+}#for
+
 ```
 
 
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 #Hidden Markov Model
+
+hmm = HMM::initHMM(States , Symbols , transProbs = transProbs , emissionProbs = emissionProbs)
 
 hmm
 
@@ -57,11 +100,41 @@ library(ggplot2)
 ggplot() + 
   geom_line(aes(x = 1 : nSim , y = simulateHmm$states , color = "States"))+
   geom_line(aes(x = 1 : nSim , y = simulateHmm$observation , color = "Observations"))+
-  ylim(-1 , 12)
+  #geom_line(aes(x = simulateHmm$states , y = simulateHmm$observation , color = "Observations"))+
+  ylim(-1 , 12)+
+  xlab("Number of Simulation")+
+  ylab("Observation / States")+
+  ggtitle("HMM")
   
 ```
 
+***Question 3***
+
+Discard the hidden states from the sample obtained above. Use the remaining observations to compute the filtered and smoothed probability distributions for each of the 100 time points. Compute also the most probable path.
+
+*Filtered and Smoothed Probability*
+
+Now in order to calculate filtered probability, I am using forward(hmm, observation)
+
+In order to calculate, smoothed probabilities, we can use posterior(hmm, observation) where The posterior probability of being in a state X at time k can be computed from the forward and backward probabilities.
+
+Now most probable path is calculated considering that bot can move from State X to State X \pm 1 , so it can only move to next/previous stage and not like 2 or 3 stages ahead / behind. 
+
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
+
+filterdProb = exp(HMM::forward(hmm , simulateHmm$observation))
+
+smoothedProb = HMM::posterior(hmm , simulateHmm$observation)
+
+probablePath = HMM::viterbi(hmm, simulateHmm$observation)
+
+```
+
+Caluclating Accuracy 
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+
+
 
 ```
 
@@ -70,10 +143,10 @@ ggplot() +
 
 ```
 
+***References***
 
-```{r, echo=TRUE, warning=FALSE , message=FALSE}
+1. [Package "HMM"](https://cran.r-project.org/web/packages/HMM/HMM.pdf)
 
-```
 
 **Appendix**
 ```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
