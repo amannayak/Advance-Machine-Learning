@@ -122,6 +122,7 @@ Now most probable path is calculated considering that bot can move from State X 
 
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 
+#Since we have received probabilities in log, taking anti-log 
 filterdProb = exp(HMM::forward(hmm , simulateHmm$observation))
 
 smoothedProb = HMM::posterior(hmm , simulateHmm$observation)
@@ -130,11 +131,80 @@ probablePath = HMM::viterbi(hmm, simulateHmm$observation)
 
 ```
 
-Caluclating Accuracy 
+Calculating Accuracy 
 
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 
+fnAccuracy = function(prob , Margin = 2 , States){
+  #prob = probability of filter or smoother 
+  #Margin = margin = 2 
+  #States : States obtained during simulation 
+  
+  #normalized prob
+  normalisedProb = prop.table(prob , margin = Margin)
+  
+  #predicted states 
+  PredStates = apply(normalisedProb, MARGIN = Margin, which.max)
+  
+  #Calculate Accuracy in percentage when compared with  States obtained during simulation
+  percAcc = sum(PredStates == States) / length(States) 
 
+  return(percAcc)
+}
+
+```
+
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+
+filterAccuracy = fnAccuracy(prob = filterdProb , Margin = 2 , States = simulateHmm$states)
+filterAccuracy
+smoothAccuracy = fnAccuracy(prob = smoothedProb , Margin = 2 , States = simulateHmm$states)
+smoothAccuracy
+```
+
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+#probable path accuracy 
+
+probPathAcc = sum(probablePath == simulateHmm$observation)/length(simulateHmm$observation)
+probPathAcc
+
+```
+
+***Question 5***
+
+#Generating Different Sample 
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+suppressWarnings(RNGversion("3.5.1"))
+set.seed(9999789)
+nSim = 200
+simulateHmm = simHMM(hmm , nSim)
+```
+
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+filterdProb = exp(HMM::forward(hmm , simulateHmm$observation))
+
+smoothedProb = HMM::posterior(hmm , simulateHmm$observation)
+
+probablePath = HMM::viterbi(hmm, simulateHmm$observation)
+
+
+filterAccuracy = fnAccuracy(prob = filterdProb , Margin = 2 , States = simulateHmm$states)
+filterAccuracy
+smoothAccuracy = fnAccuracy(prob = smoothedProb , Margin = 2 , States = simulateHmm$states)
+smoothAccuracy
+
+probPathAcc = sum(probablePath == simulateHmm$observation)/length(simulateHmm$observation)
+probPathAcc
+
+```
+
+***Question 6***
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
 
 ```
 
