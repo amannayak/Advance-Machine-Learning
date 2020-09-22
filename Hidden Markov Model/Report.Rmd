@@ -19,6 +19,9 @@ Model the behavior of a robot that walks around a ring. The ring is divided into
 
 ***Question 1***
 
+*Build a hidden Markov model (HMM) for the scenario described above.*
+
+
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 #Building Hidden Markov Model 
 library(HMM)
@@ -67,18 +70,26 @@ for(i in 1:n){
   emissionProbs[i , Col_Indx] = 0.2
 }#for
 
+hmm = HMM::initHMM(States , Symbols , transProbs = transProbs , emissionProbs = emissionProbs)
+
 ```
 
 
-```{r, echo=TRUE, warning=FALSE , message=FALSE}
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
 #Hidden Markov Model
 
-hmm = HMM::initHMM(States , Symbols , transProbs = transProbs , emissionProbs = emissionProbs)
 
+cat("\n")
+cat("Hidden Markov Model for given scenario is")
+cat("\n")
+cat("\n")
 hmm
 
 ```
-*Question 2*
+***Question 2***
+
+*Simulate the HMM for 100 time steps.*
+
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 suppressWarnings(RNGversion("3.5.1"))
 set.seed(12345)
@@ -86,31 +97,17 @@ nSim = 100
 simulateHmm = simHMM(hmm , nSim)
 ```
 
-```{r, echo=TRUE, warning=FALSE , message=FALSE}
-
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+cat("\n")
 cat("Simulated Values")
 cat("\n")
 simulateHmm
 cat("\n")
 ```
 
-```{r, echo=TRUE, warning=FALSE , message=FALSE}
-library(ggplot2)
-
-ggplot() + 
-  geom_line(aes(x = 1 : nSim , y = simulateHmm$states , color = "States"))+
-  geom_line(aes(x = 1 : nSim , y = simulateHmm$observation , color = "Observations"))+
-  #geom_line(aes(x = simulateHmm$states , y = simulateHmm$observation , color = "Observations"))+
-  ylim(-1 , 12)+
-  xlab("Number of Simulation")+
-  ylab("Observation / States")+
-  ggtitle("HMM")
-  
-```
-
 ***Question 3***
 
-Discard the hidden states from the sample obtained above. Use the remaining observations to compute the filtered and smoothed probability distributions for each of the 100 time points. Compute also the most probable path.
+*Discard the hidden states from the sample obtained above. Use the remaining observations to compute the filtered and smoothed probability distributions for each of the 100 time points. Compute also the most probable path.*
 
 *Filtered and Smoothed Probability*
 
@@ -118,7 +115,7 @@ Now in order to calculate filtered probability, I am using forward(hmm, observat
 
 In order to calculate, smoothed probabilities, we can use posterior(hmm, observation) where The posterior probability of being in a state X at time k can be computed from the forward and backward probabilities.
 
-Now most probable path is calculated considering that bot can move from State X to State X \pm 1 , so it can only move to next/previous stage and not like 2 or 3 stages ahead / behind. 
+Now most probable path is calculated considering that robot can move from State X to State X \pm 1 , so it can only move to next/previous stage and not like 2 or 3 stages ahead / behind. 
 
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 
@@ -155,20 +152,21 @@ fnAccuracy = function(prob , Margin = 2 , States){
 ```
 
 
-```{r, echo=TRUE, warning=FALSE , message=FALSE}
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
 filterAccuracy = fnAccuracy(prob = filterdProb , Margin = 2 , States = simulateHmm$states)
-filterAccuracy
 smoothAccuracy = fnAccuracy(prob = smoothedProb , Margin = 2 , States = simulateHmm$states)
-smoothAccuracy
+probPathAcc = sum(probablePath == simulateHmm$observation)/length(simulateHmm$observation)
+
 ```
 
 
-```{r, echo=TRUE, warning=FALSE , message=FALSE}
-#probable path accuracy 
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+accDf = data.frame("Filter" = filterAccuracy , 
+                   "Smoothing" = smoothAccuracy,
+                   "Probable Path" = probPathAcc)
 
-probPathAcc = sum(probablePath == simulateHmm$observation)/length(simulateHmm$observation)
-probPathAcc
+knitr::kable(accDf , caption = "Accuracy Table")
 
 ```
 
@@ -179,44 +177,115 @@ probPathAcc
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 suppressWarnings(RNGversion("3.5.1"))
 set.seed(9999789)
-nSim = 200
-simulateHmm = simHMM(hmm , nSim)
+nSim = 100
+simulateHmm2 = simHMM(hmm , nSim)
 ```
 
 
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
-filterdProb = exp(HMM::forward(hmm , simulateHmm$observation))
+filterdProb2 = exp(HMM::forward(hmm , simulateHmm2$observation))
 
-smoothedProb = HMM::posterior(hmm , simulateHmm$observation)
+smoothedProb2 = HMM::posterior(hmm , simulateHmm2$observation)
+probablePath2 = HMM::viterbi(hmm, simulateHmm2$observation)
 
-probablePath = HMM::viterbi(hmm, simulateHmm$observation)
-
-
-filterAccuracy = fnAccuracy(prob = filterdProb , Margin = 2 , States = simulateHmm$states)
-filterAccuracy
-smoothAccuracy = fnAccuracy(prob = smoothedProb , Margin = 2 , States = simulateHmm$states)
-smoothAccuracy
-
-probPathAcc = sum(probablePath == simulateHmm$observation)/length(simulateHmm$observation)
-probPathAcc
+filterAccuracy2 = fnAccuracy(prob = filterdProb2 , Margin = 2 , States = simulateHmm2$states)
+smoothAccuracy2 = fnAccuracy(prob = smoothedProb2 , Margin = 2 , States = simulateHmm2$states)
+probPathAcc2 = sum(probablePath2 == simulateHmm2$observation)/length(simulateHmm2$observation)
 
 ```
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+accDf = data.frame("Filter" = filterAccuracy2 , 
+                   "Smoothing" = smoothAccuracy2,
+                   "Probable Path" = probPathAcc2)
+
+knitr::kable(accDf , caption = "Accuracy Table with Different Sample")
+
+```
+
+Now it can be seen that, smoothed distribution is more accurate than filters distribution as filtered distribution is influenced by noise while in smoothing, because it have access to both past and future values thus it is less vulnerable to sudden changes and gives more accurate results. 
+
 
 ***Question 6***
 
+*Entropy* of a random variable is average level of "Information", "Surprise" or "Uncertainty" inherent in variables possible outcome. 
+
+Now a random variable X, with possible outcome $ x_1,x_2,....x_n $ which occur with probability of $P(x_1) , P(x_2), ....., P(x_n)$, the entropy of *X* is formally defined as: 
+
+$$
+  H(X) = -\sum_{i = 1}^{n}P(x_i)logP(x_i)
+$$
+So higher entropy refer to more uncertainty, thus in order to check if we increase number of observations, do we have better understanding of where robot is, we would calculate entropy for filtered probabilities as they give result for robot location at time t with 1:t time information.  
+
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
+#genrating more samples with same seed values 
+suppressWarnings(RNGversion("3.5.1"))
+set.seed(12345)
+nSim = 200
+simulateHmm3 = simHMM(hmm , nSim)
+filterdProb3 = exp(HMM::forward(hmm , simulateHmm3$observation))
+
+library(entropy)
+
+e1Fwd = apply(X = filterdProb , MARGIN = 2 , FUN =  entropy.empirical)
+#e1FwdBack = apply(X = smoothAccuracy , MARGIN = 2 , FUN =  entropy.empirical)
+
+e2Fwd = apply(X = filterdProb3 , MARGIN = 2 , FUN =  entropy.empirical)
+
+
 
 ```
 
 
-```{r, echo=TRUE, warning=FALSE , message=FALSE}
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
+
+c1 <- rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
+c2 <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
+par(mfrow = c(1,2))
+hist(e1Fwd , main = "Entropy with 100 Samples" , breaks = 10  ,col = c1 , xlab = "Entropy")
+hist(e2Fwd , main = "Entropy with 200 Samples" , breaks = 50 ,col = c2 ,  xlab = "Entropy")
+
+
+library(ggplot2)
+ggplot()+
+  geom_line(aes(x = 1:length(e1Fwd) , y = e1Fwd , color = "e1"))+
+  geom_line(aes(x = 1:length(e2Fwd) , y = e2Fwd , color = "e2"))+
+  xlab("Samples")+
+  ylab("Entropy")+
+  ggtitle("Entropy vs Number of Samples")
+  
+  
 ```
+
+
+It  can be seen from above plot of entropy (i.e. uncertainty) is reducing over time but with more and more data, entropy which is measure of uncertainity also increases. Thus gaining more and more obervation after a point won't help us in understanding where our robot is. 
+
+
+***Question 7***
+
+Using prior knowledge of its position as time t = 100 and transition probability, we can estimate probabilites of hidden state at time stamp t = 101.
+
+```{r, echo=TRUE, warning=FALSE , message=FALSE}
+#normalized prob
+normalisedProb = prop.table(filterdProb , margin = 2)
+
+hiddenStates101 = normalisedProb[,100] %*% transProbs
+cat("\n")
+cat("Probabilities of the hidden states for the time step 101 is")
+cat("\n")
+hiddenStates101
+```
+
+
+
 
 ***References***
 
 1. [Package "HMM"](https://cran.r-project.org/web/packages/HMM/HMM.pdf)
 
+2. [Entropy](https://en.wikipedia.org/wiki/Entropy_(information_theory))
 
 **Appendix**
 ```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
