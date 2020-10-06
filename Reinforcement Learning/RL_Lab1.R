@@ -74,10 +74,13 @@ GreedyPolicy <- function(x, y){
   # 
   # Returns:
   #   An action, i.e. integer in {1,2,3,4}.
-  
+  Rewards = q_table[x,y,]
+  maxRewardIndx = which(Rewards == max(Rewards))
+  #randomly selecting max value and setting it as action
+  return(sample(maxRewardIndx , size = 1))
   # Your code here.
   
-}
+}#GreedyPolicy
 
 EpsilonGreedyPolicy <- function(x, y, epsilon){
   
@@ -91,8 +94,20 @@ EpsilonGreedyPolicy <- function(x, y, epsilon){
   #   An action, i.e. integer in {1,2,3,4}.
   
   # Your code here.
+  Rewards = q_table[x,y,]
+  maxRewardIndx = which(Rewards == max(Rewards))
+  #randomly selecting max value and setting it as action
+  InitSelected = sample(maxRewardIndx , size = 1)
   
-}
+  #unif
+  p = runif(1)
+  if(p < epsilon)
+    {
+      sample(setdiff(c(1,2,3,4) ,InitSelected) , size = 1)
+  }else{
+      InitSelected
+    }
+}#EpsilonGreedyPolicy
 
 transition_model <- function(x, y, action, beta){
   
@@ -243,6 +258,7 @@ reward_map[1,6] <- 10
 q_table <- array(0,dim = c(H,W,4))
 
 vis_environment()
+
 
 for(j in c(0,0.2,0.4,0.66)){
   q_table <- array(0,dim = c(H,W,4))
