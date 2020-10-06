@@ -103,11 +103,12 @@ EpsilonGreedyPolicy <- function(x, y, epsilon){
   p = runif(1)
   if(p < epsilon)
     {
-      sample(setdiff(c(1,2,3,4) ,InitSelected) , size = 1)
+      return(sample(setdiff(c(1,2,3,4) ,InitSelected) , size = 1))
   }else{
-      InitSelected
+      return(InitSelected)
     }
 }#EpsilonGreedyPolicy
+
 
 transition_model <- function(x, y, action, beta){
   
@@ -154,11 +155,25 @@ q_learning <- function(start_state, epsilon = 0.5, alpha = 0.1, gamma = 0.95,
   #   a global variable can be modified with the superassigment operator <<-.
   
   # Your code here.
+  episode_correction = 0
   
   repeat{
     # Follow policy, execute action, get reward.
+    x = start_state[1]
+    y = start_state[2]
+    reward = reward_map[x,y]
+    A = EpsilonGreedyPolicy(x,y,epsilon)
+    a = GreedyPolicy(x,y)
     
+    #calculate new state
+    TransState = transition_model(x,y,A,beta)
+    NewCorrection = alpha * (reward + gamma*(q_table[TransState[1],TransState[2],a])
+             - q_table[x,y,A])
+    episode_correction = episode_correction + NewCorrection
     # Q-table update.
+    q_table[x,y,A] <<- q_table[x,y,A] + NewCorrection
+    
+    start_state = TransState
     
     if(reward!=0)
       # End episode.
