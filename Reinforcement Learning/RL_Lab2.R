@@ -7,6 +7,8 @@
 #####################################################################################################
 
 # install.packages("keras")
+#install.packages("tensorflow")
+library(tensorflow)
 library(keras)
 
 # install.packages("ggplot2")
