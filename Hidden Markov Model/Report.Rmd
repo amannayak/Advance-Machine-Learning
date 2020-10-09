@@ -21,7 +21,7 @@ Model the behavior of a robot that walks around a ring. The ring is divided into
 
 *Build a hidden Markov model (HMM) for the scenario described above.*
 
-
+To build HMM, we have to specify emission and transition probability, where transition probability specify probability with which robot move from state i to state j. And Emission probability specify probability of state given observation. 
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 #Building Hidden Markov Model 
 library(HMM)
@@ -33,17 +33,30 @@ Symbols = 1:10
 #the robot is in one of the sectors and decides with equal probability to stay in that sector or move to the next sector.
 #we get probability of staying as 0.5 and probability of moving as 0.5
 
-transProbs = 0.5*diag(10) 
-for(i in 1:ncol(transProbs))
-{
-    if(i != ncol(transProbs))
-    {
-      transProbs[i+1 , i]  = 0.5
-    }else{
-      transProbs[1 , i]  = 0.5
-    }
-}
+# transProbs = 0.5*diag(10) 
+# for(i in 1:ncol(transProbs))
+# {
+#     if(i != ncol(transProbs))
+#     {
+#       transProbs[i+1 , i]  = 0.5
+#     }else{
+#       transProbs[1 , i]  = 0.5
+#     }
+# }
 
+transProbs = c(0.5,0.5,0,0,0,0,0,0,0,0,
+               0,0.5,0.5,0,0,0,0,0,0,0,
+               0,0,0.5,0.5,0,0,0,0,0,0,
+               0,0,0,0.5,0.5,0,0,0,0,0,
+               0,0,0,0,0.5,0.5,0,0,0,0,
+               0,0,0,0,0,0.5,0.5,0,0,0,
+               0,0,0,0,0,0,0.5,0.5,0,0,
+               0,0,0,0,0,0,0,0.5,0.5,0,
+               0,0,0,0,0,0,0,0,0.5,0.5,
+               0.5,0,0,0,0,0,0,0,0,0.5
+               )
+
+transProbs = matrix(data =  transProbs , byrow =  TRUE , nrow = 10 , ncol = 10)
 
 colnames(transProbs) = States
 rownames(transProbs) = States
@@ -115,7 +128,7 @@ Now in order to calculate filtered probability, I am using forward(hmm, observat
 
 In order to calculate, smoothed probabilities, we can use posterior(hmm, observation) where The posterior probability of being in a state X at time k can be computed from the forward and backward probabilities.
 
-Now most probable path is calculated considering that robot can move from State X to State X \pm 1 , so it can only move to next/previous stage and not like 2 or 3 stages ahead / behind. 
+Now most probable path is calculated considering that robot can move from State X to State X $\pm$ 1 , so it can only move to next/previous stage and not like 2 or 3 stages ahead / behind. 
 
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 
@@ -172,7 +185,7 @@ knitr::kable(accDf , caption = "Accuracy Table")
 
 ***Question 5***
 
-#Generating Different Sample 
+*Generating Different Sample*
 
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 suppressWarnings(RNGversion("3.5.1"))
@@ -204,8 +217,16 @@ knitr::kable(accDf , caption = "Accuracy Table with Different Sample")
 
 ```
 
-Now it can be seen that, smoothed distribution is more accurate than filters distribution as filtered distribution is influenced by noise while in smoothing, because it have access to both past and future values thus it is less vulnerable to sudden changes and gives more accurate results. 
 
+*Smoothing Vs Filtering*
+
+Now if we have observation $x_1 , x_2 , .... x_f,.....x_n$, and we apply filtering to it for predicting state $Z_f$, filtering distribution only uses observations till $x_1 , x_2 , .... x_f$ while smoothing distribution uses complete observations $x_1 , x_2 , .... x_f,.....x_n$ , i.e. past and future values thus it is less influenced by sudden changes. Thus it is more accurate than filtered one. 
+
+Now it can be seen that, smoothed distribution is more accurate than filters distribution as filtered distribution is influenced only uses data till smoothing, because it have access to both past and future values thus it is less vulnerable to sudden changes and gives more accurate results. 
+
+*Smoothing Vs Most Probable Path*
+
+Now in order to calculate most probable path, we are calculating we are using viterbi algorithm where we are calculating joint probability of $p(Z_{1:n} , x_{1:n})$ thus we are trying to calculate maximal probability of all events happening together which is always going to be less than marginal probability calculated for smoothing, thus Most probable path is less accurate.
 
 ***Question 6***
 
@@ -260,22 +281,37 @@ ggplot()+
 ```
 
 
-It  can be seen from above plot of entropy (i.e. uncertainty) is reducing over time but with more and more data, entropy which is measure of uncertainity also increases. Thus gaining more and more obervation after a point won't help us in understanding where our robot is. 
+It  can be seen from above plot of entropy (i.e. uncertainty) is not improving over time with more and more data. As robot current position $x_t$ only depend on its previous position such that given $x_{t-1}$ and it conditionally independent of all remaining positions given $x_{t-1}$. 
 
 
 ***Question 7***
 
-Using prior knowledge of its position as time t = 100 and transition probability, we can estimate probabilites of hidden state at time stamp t = 101.
+*1 Step Prediction*
+
+Using prior knowledge of its position as time t = 100 and transition probability, we can estimate probabilities of hidden state at time stamp t = 101.
+
+To find probability of hidden state at time stamp 101 with given prior observations i.e. $p(Z_{101}| x_{1:100})$, 
+
+$$
+    p(Z_{101}| x_{1:100}) = \sum_{Z_{100}} p(Z_{101} , Z_{100}|x_{1:100}) = \sum_{Z_{100}} p(Z_{101}|Z_{100}) P( Z_{100}|x_{1:100})
+$$
+
+Here $p(Z_{101}|Z_{100})$ is our transition probability and $P( Z_{100}|x_{1:100})$ is our filtered probability for state $Z_{100}$.
 
 ```{r, echo=TRUE, warning=FALSE , message=FALSE}
 #normalized prob
 normalisedProb = prop.table(filterdProb , margin = 2)
 
-hiddenStates101 = normalisedProb[,100] %*% transProbs
+hiddenStates101 = t(transProbs) %*% normalisedProb[,100]  
 cat("\n")
 cat("Probabilities of the hidden states for the time step 101 is")
 cat("\n")
 hiddenStates101
+cat("\n")
+cat("The most probable state at t= 101 is : " , as.character(which.max(hiddenStates101)))
+cat("\n")
+
+
 ```
 
 
