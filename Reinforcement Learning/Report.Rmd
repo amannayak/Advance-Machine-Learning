@@ -123,6 +123,7 @@ EpsilonGreedyPolicy <- function(x, y, epsilon){
   # Your code here.
   Rewards = q_table[x,y,]
   maxRewardIndx = which(Rewards == max(Rewards))
+  
   #randomly selecting max value and setting it as action
   if (length(maxRewardIndx) == 1){
     InitSelected = maxRewardIndx
@@ -133,7 +134,7 @@ EpsilonGreedyPolicy <- function(x, y, epsilon){
   p = runif(1)
   if(p < epsilon)
     {
-      return(sample(setdiff(c(1,2,3,4) ,InitSelected) , size = 1)) #e
+      return(sample(c(1,2,3,4) , size = 1)) #e
   }else{
       return(InitSelected) #1-e
     }
@@ -272,15 +273,17 @@ for(i in 1:10000){
 
 **What has the agent learned after the first 10 episodes ?**
 
-It can be seen from above Q-Table named "Q-Table after 10 Iterations". With very few iterations, agent movement is quite random and yet there is no significant learning.
+From the above Q-Table named "Q-Table after 10 Iterations" with ten iterations, we have a small number of episodes and, the agent is not able to learn optimal paths towards maximum reward location as it is in the exploring stage, so there is no significant learning.
 
 **Is the final greedy policy (after 10000 episodes) optimal? Why / Why not ?**
 
-If can be seen that model has learned path towards maximum reward position state and thus when left in any grid, it will converge to global maxima position. Thus final greedy postion is optimal.
+From plot "Q-Table after 10000 Iterations", the model has learned multiple paths towards the maximum reward position state in 10000 episodes, and thus when left in any grid position, it will converge to the maximum reward position. The final greedy policy is optimal in terms of reaching to highest reward grid position when we have a high number of episodes in the learning phase.
 
 **Does the agent learn that there are multiple paths to get to the positive reward ? If not, what could be done to make the agent learn this ?**
 
-In Q-table for 10000 iterations, looking at maximum rewards for each grid, it can be seen that agent did learn multiple path to obtain maximum reward based on where it start but it will follow same path in test state to reach for maximum reward. 
+In "Q-Table after 10000 Iterations", looking at maximum rewards for each grid, it is observed that the agent did learn multiple paths to reach to maximum reward position in the grid based on where it started. 
+
+Now if we want to explore more paths during during learning, we can set $\epsilon$ parameter (Exploration probability) with much more higher value. It is explained below in more details.  
 
 
 # Environment B
@@ -293,7 +296,7 @@ In Q-table for 10000 iterations, looking at maximum rewards for each grid, it ca
 
 *Exploitation* on the other hand, chooses the greedy action to get the most reward by exploiting the agent’s current action-value estimates. But by being greedy with respect to action-value estimates, may not actually get the most reward and lead to sub-optimal behavior.
 
-When an agent explores, it gets more accurate estimates of action-values. And when it exploits, it might get more reward. It cannot, however, choose to do both simultaneously, which is also called the exploration-exploitation dilemma.
+When an agent explores, it gets more accurate estimates of action-values. And when it exploits, it might get more reward. It cannot, however, choose to do both simultaneously.
 
 *Use of $\epsilon$ parameter:* 
 
@@ -380,11 +383,17 @@ for(j in c(0.5,0.75,0.95)){
 
 *Epsilon Impact*
 
-When $\epsilon$ = 0.5, we give equal probability to exploit and explore thus it can be seen that we are able to find multiple directions towards high reward stages while wen we set $\epsilon$ = 0.1, system is more exploiting in nature and select path with only high rewards and thus we are not able to find multiple directions towards high reward stages which can be seen by less number of green grids when $\epsilon$ = 0.1. 
+When $\epsilon$ = 0.5, we give equal probability to exploit and explore thus it can be seen that we can find multiple directions towards high reward stages while wen we set $\epsilon$ = 0.1, the system is more exploiting in nature and select path with only high rewards and thus we are not able to find multiple directions towards high reward stages which can be seen by less number of green grids when $\epsilon$ = 0.1. 
 
 *Gamma Impact*
 
-With different values of $\gamma$ (discount factor) it can be seen that correction is low for $\gamma$ = 0.5 while since it is looking for high reward in near future only and when we increase this to $\gamma$ = 0.75 we can see higher variance in correction as now we are more interested in long term rewards than short term one and when we increase it $\gamma$ = 0.95, we are giving very very high value to future rewards and thus system is more tuned for future rewards.
+With different values of $\gamma$ (discount factor) it can be seen that correction is low for $\gamma$ = 0.5 while since it is looking for a high reward in near future only and when we increase this to $\gamma$ = 0.75 we can see the higher variance in correction (when $\epsilon$ is 0.5) as now we are more interested in long term rewards than a short term one and when we increase it $\gamma$ = 0.95, we are giving very very high value to future rewards and thus the system is more tuned for future rewards.
+
+*Combined Impact of Epsilon and Gamma*
+
+When we have $\epsilon$ as 0.5 and we keep on increasing $\gamma$, since model have balance exploration and exploitation and with every increase in $\gamma$ we can see that system is giving more and more value to future rewards thus we get large number of episodes converging at max reward in grid which is 10. 
+
+But when we have $\epsilon$ as 0.1 and even when we increase $\gamma$, system being exploiting (1-$\epsilon$ is high ) and not exploring more we can see higher number of episodes converging at reward grid 5 which is not gloabl optimal location.    
 
 # Environment C (the effect of beta)
 
@@ -415,7 +424,8 @@ for(j in c(0,0.2,0.4,0.66)){
   vis_environment(i, gamma = 0.6, beta = j)
 }
 ```
-As we are increasing $\beta$, we can see that model will not move in chosen direction and thus its movement is getting more and more random and with $\beta$ at 0.6, it will mostly move towards right or left of chosen direction thus it might get harder for agent to reach optimal state in grid.
+
+As we are increasing $\beta$, we can see that model will not move in chosen direction and thus its movement is getting more and more random and with $\beta$ at 0.6 (as movement in chosen direction have probability of (1-$\beta$)), it will mostly move towards right or left of chosen direction thus it might get harder for agent to reach optimal state in grid.
 
 Thus $\beta$ value can be used to cover uncertainty about action taken by agent in any given environment.
 
@@ -680,11 +690,12 @@ show_validation(5000)
 ```
 
 **Has the agent learned a good policy? Why / Why not ?**
-It can be seen that agent is able to learn the good policy as it have access to all data points and thus it is able to generalize and learn good policy. 
+
+It can be seen that the agent is able to learn the good policy as it had access to all grid positions (as training data) and thus it is able to generalize and learn good policy. 
 
 **Could you have used the Q-learning algorithm to solve this task ?**
 
-In Q-Learning we create q-matrix which contain states and rewards for state, now when we are not able to obtain state and optimal location is keep on changing like for above scenario, we cannot implement Q-Learning. 
+In Q-Learning we create a q-matrix which contain states and rewards for the state, now when we grid where the optimal location is kept on changing like for the above scenario, we cannot implement Q-Learning since the path to the optimal location will keep on changing and in order to do so, we have to train the model with different high reward positions which won't give us single generalized model. Thus applying Q-Learning for a similar problem is not the correct solution. 
 
 # Environment E (training with top row goal positions)
 
@@ -713,12 +724,11 @@ show_validation(5000)
 
 *Has the agent learned a good policy? Why / Why not ?*
 
-Since agent doen not have access to similar data, it was not able to generalize and thus obtained policy is not good. 
-
+Since the agent only had access to 1st row of the grid as data, the neural network was not able to learn all paths for the whole grid, so we are not able to create a generalized model because of which agent is not able to learn optimal policy.
 
 *If the results obtained for environments D and E differ, explain why*
 
-In D agent was able to generalize based on given training data which is access to whole grid while it lack to do it for E as it only had access to 1st row of grid.  
+In D agent was able to generalize based on given training data as it had access to the whole grid while it lacks to do it for E as it only had access to 1st row of the grid thus better generalization was obtained in D while E we were not able to do so because of which we have obtained different results. This can be seen by the path selected in case of validation for different goal positions.
 
 
 
