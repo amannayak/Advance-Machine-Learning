@@ -1,0 +1,89 @@
+---
+title: "Report"
+author: "Aman Kumar Nayak"
+date: "10/13/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE , tidy=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
+
+
+```
+
+
+**Appendix**
+```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```
