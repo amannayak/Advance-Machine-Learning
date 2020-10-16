@@ -13,6 +13,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **1.1**
 
+We have gaussian regression process model as : 
+
+$y = f(x) + \epsilon$ with $\epsilon \sim Norm(0 , \sigma_n^2)$ and $f \sim GP(0, k(x,x'))$
+
+Below is algorithm implemented from Rasmussen and Willams' book which can be found on page 19. [Link to book](http://www.gaussianprocess.org/gpml/chapters/RW2.pdf)
+
 ```{r, echo = TRUE, warning=FALSE , message=FALSE}
 # Covariance function
 SquaredExpKernel <- function(x1,x2,sigmaF=1,l=3){
@@ -75,6 +81,8 @@ posteriorGP = function(X , y , XStar, sigmaNoise , sigmaF , l){
 
 **1.2**
 
+Now with hyperparameter as $\sigma_f = 1$ and l = 0.3, updating prior with single observation: (x,y) = (0.4,0.719) . Assumed value for $\sigma_n$ is 0.1 . Below is plot for posterior mean $f$ over the interval of x $\epsilon$ [-1,1] with 95% probability (pointwise) band for $f$. 
+
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
 xGrid = seq(-1,1,length = 100)
@@ -104,7 +112,7 @@ posteriorF = posteriorGP(X = xPrior , y = yPrior , XStar = xGrid ,
 library(ggplot2)
 
 fnPlot = function(data, xGrid , main.T , xhigh , yhigh , high = TRUE,
-                  XStarPlot = FALSE, OrigData = NA ){
+                  XStarPlot = FALSE, OrigData = NA , Xlab = NA , Ylab = NA ){
    l.band = data$mean - sqrt(1.96 * data$Variance)
    u.band = data$mean + sqrt(1.96 * data$Variance)
   
@@ -119,21 +127,30 @@ fnPlot = function(data, xGrid , main.T , xhigh , yhigh , high = TRUE,
    if(XStarPlot == TRUE)
       p = p + geom_point(aes(x = xGrid , y = OrigData , color = "data")) 
    
-   p + xlab("X Grid") + ylab("Posterior Mean") + 
-      ggtitle(main.T)
+   if(is.null(Xlab) & is.null(Ylab))
+      {
+         p + xlab("X Grid") + ylab("Posterior Mean") 
+      }else{
+         p + xlab(Xlab) + ylab(Ylab)
+      }
+   
+   p + ggtitle(main.T)
    
    return(p)
     
 }#fnPlot
 
 
-fnPlot(data = posteriorF , xGrid = xGrid , main.T = "Posterior Mean" , 
+fnPlot(data = posteriorF , xGrid = xGrid , main.T = "Posterior Mean for f" , 
        xhigh = 0.4 , yhigh = 0.719 )
 
 
 ```
 
 **1.3**
+
+Updating posterior from 1.2 with another observation (x,y) = (-0.6, -0.044) and taking plot: 
+
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
@@ -152,6 +169,8 @@ fnPlot(data = posteriorF2 , xGrid = xGrid , main.T = "Posterior Mean" ,
 ```
 
 **1.4**
+
+Computing distribution of posterior for below data points and ploting as above:
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
@@ -183,6 +202,8 @@ fnPlot(data = posteriorF2 , xGrid = xGrid , main.T = "Posterior Mean" ,
 
 **1.5**
 
+Repeating step 4 with new hyperparameter value of l = 1 and using same $\sigma_f$ = 1. 
+
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
@@ -199,12 +220,19 @@ fnPlot(data = posteriorF2 , xGrid = xGrid , main.T = "Posterior Mean" ,
 ```
 
 
+*Comparison of Results*
+
+In plot for 1.2 to 1.4 observation point's 95% probability band is narrow, as we are assured about the point, thus the obtained 95% band around the observation point is narrow.  
+
+In 1.4 and 1.5, when we change the value of "l" from 0.3 to 1, since "l" is acting as a scaling factor, we will obtain a smaller co-variance value and, thus we got a much smoother curve. 
+
+
 #2. GP Regression with kernlab
 
 **2.1**
 
 
-```{r, echo=TRUE, warning=FALSE , message=FALSE}
+```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
 library(kernlab)
 library(AtmRay)
@@ -225,14 +253,14 @@ data.Temp = data$temp[time]
 
 
 
-plot(time , data.Temp , xlab = "Days (instead of dates, array of 1:n representing dates)" ,
-     ylab = "Temp" , main = "Selected Data"
-     )
+plot(time , data.Temp , xlab = "Time" ,
+     ylab = "Temp" , main = "Scatter Plot for Data vs Time" )
+
 ```
 
+Square exponential kernel function:
 
-
-```{r, echo=FALSE, warning=FALSE , message=FALSE}
+```{r, echo = TRUE, warning=FALSE , message=FALSE}
 #given 
 x = 1
 x2 = 2
@@ -270,6 +298,14 @@ cat("\n")
 
 **2.2**
 
+Given model is :
+
+$temp = f(time) + \epsilon$ with $\epsilon \sim Norm(0 , \sigma_n^2)$ and $f \sim GP(0, k(time,time'))$
+
+Here $\sigma_n^2$ is residual variance from a simple quadratic regression model fit. 
+
+Estimating above gaussian process model using the squared exponential function from 2.1 with hyperparameter value as $\sigma_f$ = 20 and l = 0.2.
+
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 #calculate sigmaN as residual variance from a simple quadratic regression fit
 #since f is distributed with mean 0 , we have to scale our data 
@@ -298,10 +334,15 @@ meanPredicted = predict(GaussianModel , time)
 ggplot()+
    geom_point(aes(x = time , y = data.Temp , color = "Data"))  +
    geom_line(aes(x = time , y = meanPredicted[,1] , color = "Predicted Mean"))+
-   xlab("Time") + ylab("Temp") 
+   xlab("Time") + ylab("Temp") + ggtitle("Posterior Mean")
 
 ```
+
+
 **2.3**
+
+Computing posterior variance for f.
+
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 #now posterior mean can be calculated using our function : posteriorGP
@@ -313,21 +354,42 @@ ggplot()+
 
 #posteriorGP = function(X , y , XStar, sigmaNoise , sigmaF , l)
 
-posterVariance = posteriorGP(X = scaleData.Time , y = scaledData.Temp , 
-                             XStar = scaleData.Time , sigmaNoise = SigmaN,
+posterVariance = posteriorGP(X = time , y = scaledData.Temp , 
+                             XStar = time , sigmaNoise = SigmaN,
                              sigmaF = 20 , l =  0.2
                              )$Variance
 
 #unscaledPostVar = posterVariance * sd(posterVariance) + mean(posterVariance) + posterVariance
 
-lPlot = list("mean" = meanPredicted , "Variance" = posterVariance)
 
-fnPlot(data = lPlot , xGrid = time , main.T = "Posterior Mean and Variance" , 
-       xhigh = 0  , yhigh =0, high = FALSE , XStarPlot = TRUE , OrigData = data.Temp )
+# lPlot = list("mean" = meanPredicted , "Variance" = posterVariance)
+# 
+# fnPlot(data = lPlot , xGrid = time , main.T = "Posterior Mean and 95% Probability Band" , 
+#        xhigh = 0  , yhigh =0, high = FALSE , XStarPlot = TRUE , OrigData = data.Temp , 
+#        Xlab = "Time" , Ylab = "Temp")
+
+l.band = meanPredicted - sqrt(1.96 * posterVariance)
+u.band = meanPredicted + sqrt(1.96 * posterVariance)
+
+
+ggplot()+
+   geom_point(aes(x = time , y = data.Temp , color = "Data"))  +
+   geom_line(aes(x = time , y = meanPredicted[,1] , color = "Predicted Mean"))+
+   geom_line(aes(x = time , y = l.band , color = "95% Probability Band"))+
+   geom_line(aes(x = time , y = u.band , color = "95% Probability Band"))+
+   xlab("Time") + ylab("Temp") + ggtitle("Posterior Mean and 95% Probability band")
+
+
+   
 
 ```
 
-**1.4**
+**2.4**
+
+Considering new model : 
+
+$temp = f(day) + \epsilon$ with $\epsilon \sim Norm(0 , \sigma_n^2)$ and $f \sim GP(0, k(day,day'))$
+
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
@@ -361,7 +423,18 @@ ggplot()+
 
 ```
 
-**1.5**
+**2.5**
+
+Generalization of periodic kernel:
+
+
+
+$k(x , x') = \sigma_f^2 exp(\frac{2 sin(\pi |x - x'|/d)}{l_1^2})exp(\frac{1}{2} \frac{|x - x'|^2}{l_2^2})$
+
+
+Setting hyperparameter value as : 
+
+$\sigma_f$ = 20 , $l_1$ = 1 and $l_2$ = 10 and $d = \frac{365}{sd(time)}$ 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 
@@ -407,7 +480,7 @@ ggplot() +
 
 ```
 
-With mean value predicted with day values we can that it is repeating in cycle which could be understood in terms of repeating value of days in band of 1 to 365 while mean predicted by Time is very smooth but it does not follow shift in data mass which is accurately captured in mean calculated by periodic kernel. 
+With mean value predicted with day values we can that it is repeating in cycle which could be understood in terms of repeating value of days in band of 1 to 365 while mean predicted by Time is very smooth but it does not follow shift in data mass which is accurately captured in mean calculated by periodic kernel as it take  consideration for periodic year nature given by day (1:365) with trend change over time. 
 
 
 
@@ -537,7 +610,7 @@ cat("Accuracy for Test data  with all parameters is : " , Accuracy.All)
 
 ```
 
-We can see test accuracy with test data when only two features were used is 92.42% while when all feature are used it is around 99%. It can be seen that only two features namely varWave and skewWave are important. 
+We can see test accuracy with test data when only two features were used is 92.42% while when all features are used it is around 99%. It can be seen that only two features namely varWave and skewWave are important. 
 
 ```{r, echo=FALSE, warning=FALSE , message=FALSE}
 library(caret)
@@ -551,7 +624,10 @@ print(impFeatures)
 
 ```
 
-From above importance values, we can reconfirm our belief that only 2 parameters are majorly important and last one is not at all useful. 
+From the above importance values, we can reconfirm our belief that only 2 parameters are majorly important and the last one is not at all useful when only accuracy is our concern.
+
+One more thing of interest here is that, while including all 4 Parameters, our False Positive and False Negative reduces sharply which could be an important parameter of interest. For such cases, it is expected to use all parameters.  
+
 
 
 **Appendix**
