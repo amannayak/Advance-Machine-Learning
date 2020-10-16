@@ -14,6 +14,7 @@ library(kernlab)
 library(AtmRay)
 
 
+
 ###############################################
 ###    Messin' around with kernels        #####
 ###############################################
@@ -52,7 +53,7 @@ kernelMatrix(kernel = MaternFunc, x = X, y = Xstar) # So this is K(X,Xstar).
 
 
 ##########################################
-# Author: Jose M. Peña, jose.m.pena@liu.se
+# Author: Jose M. Pe?a, jose.m.pena@liu.se
 # GP regression on the canadian wages data
 ##########################################
 
@@ -70,7 +71,7 @@ polyFit <- lm(logWage ~  age + I(age^2) + I(age^3))
 sigmaNoise = sd(polyFit$residuals)
 plot(age,logWage)
 
-# Fit the GP with built-in square expontial kernel (called rbfdot in kernlab).
+# Fit the GP with built-in square exponential kernel (called rbfdot in kernlab).
 ell <- 0.5
 SEkernel <- rbfdot(sigma = 1/(2*ell^2)) # Note the reparametrization.
 GPfit <- gausspr(age,logWage, kernel = SEkernel, var = sigmaNoise^2)

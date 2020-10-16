@@ -67,3 +67,4 @@ manipulate(
   sigmaF = slider(0, 2, step=0.1, initial = 1, label = "SigmaF"),
   l = slider(0, 2, step=0.1, initial = 1, label = "Length scale, l")
 )
+
