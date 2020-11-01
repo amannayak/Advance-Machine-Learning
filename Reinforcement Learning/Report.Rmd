@@ -193,17 +193,19 @@ q_learning <- function(start_state, epsilon = 0.5, alpha = 0.1, gamma = 0.95,
     x = start_state[1]
     y = start_state[2]
     A = EpsilonGreedyPolicy(x,y,epsilon)
-    a = GreedyPolicy(x,y)
+    #a = GreedyPolicy(x,y)
     #calculate new state
     TransState = transition_model(x,y,A,beta)
     
     reward = reward_map[TransState[1],TransState[2]]
     
-    NewCorrection = alpha * (reward + gamma*(q_table[TransState[1],TransState[2],a]) - q_table[x,y,A])
+    #NewCorrection = alpha * (reward + gamma*(q_table[TransState[1],TransState[2],a]) - q_table[x,y,A])
+    NewCorrection = reward + gamma* max(q_table[TransState[1],TransState[2],]) - q_table[x,y,A]
     episode_correction = episode_correction + NewCorrection
     
     # Q-table update.
-    q_table[x,y,A] <<- q_table[x,y,A] + NewCorrection
+    #q_table[x,y,A] <<- q_table[x,y,A] + NewCorrection
+    q_table[x,y,A] <<- q_table[x,y,A] + alpha * NewCorrection
     
     start_state = TransState
     
@@ -273,15 +275,17 @@ for(i in 1:10000){
 
 **What has the agent learned after the first 10 episodes ?**
 
-From the above Q-Table named "Q-Table after 10 Iterations" with ten iterations, we have a small number of episodes and, the agent is not able to learn optimal paths towards maximum reward location as it is in the exploring stage, so there is no significant learning.
+From the above Q-Table named "Q-Table after 10 Iterations" with ten iterations, we have a small number of episodes and, the agent is not able to learn optimal paths towards maximum reward location as it is in the exploring stage, so there is no significant learning in terms of optimal path but agent started to learn to avoid negative reward available in grid 2,3 , 3,3 and 3,4.
 
 **Is the final greedy policy (after 10000 episodes) optimal? Why / Why not ?**
 
-From plot "Q-Table after 10000 Iterations", the model has learned multiple paths towards the maximum reward position state in 10000 episodes, and thus when left in any grid position, it will converge to the maximum reward position. The final greedy policy is optimal in terms of reaching to highest reward grid position when we have a high number of episodes in the learning phase.
+From plot "Q-Table after 10000 Iterations", the model has learned multiple paths towards the maximum reward position state in 10000 episodes, and thus when agent start from grid position of 3,1, it will converge to the maximum reward position. 
+
+The final greedy policy is optimal in terms of reaching to highest reward grid position when we have a high number of episodes in the learning phase.
 
 **Does the agent learn that there are multiple paths to get to the positive reward ? If not, what could be done to make the agent learn this ?**
 
-In "Q-Table after 10000 Iterations", looking at maximum rewards for each grid, it is observed that the agent did learn multiple paths to reach to maximum reward position in the grid based on where it started. 
+In "Q-Table after 10000 Iterations", looking at maximum rewards for each grid, it is observed that the agent did learn multiple paths to reach to maximum reward position in the grid based on where it started i.e. 3,1. 
 
 Now if we want to explore more paths during during learning, we can set $\epsilon$ parameter (Exploration probability) with much more higher value. It is explained below in more details.  
 
@@ -383,20 +387,20 @@ for(j in c(0.5,0.75,0.95)){
 
 *Epsilon Impact*
 
-When $\epsilon$ = 0.5, we give equal probability to exploit and explore thus it can be seen that we can find multiple directions towards high reward stages while wen we set $\epsilon$ = 0.1, the system is more exploiting in nature and select path with only high rewards and thus we are not able to find multiple directions towards high reward stages which can be seen by less number of green grids when $\epsilon$ = 0.1. 
+When $\epsilon$ = 0.5, we give equal probability to exploit and explore thus it can be seen that we can find multiple directions towards high reward stages while when we set $\epsilon$ = 0.1, the system is more exploiting in nature and select path with only high rewards and thus we are not able to find multiple directions towards high reward stages which can be seen by less number of green grids when $\epsilon$ = 0.1. 
 
 *Gamma Impact*
 
-With different values of $\gamma$ (discount factor) it can be seen that correction is low for $\gamma$ = 0.5 while since it is looking for a high reward in near future only and when we increase this to $\gamma$ = 0.75 we can see the higher variance in correction (when $\epsilon$ is 0.5) as now we are more interested in long term rewards than a short term one and when we increase it $\gamma$ = 0.95, we are giving very very high value to future rewards and thus the system is more tuned for future rewards.
+With different values of $\gamma$ (discount factor) it can be seen that correction is low for $\gamma$ = 0.5 while since it is looking for a high reward in near future only and when we increase this to $\gamma$ = 0.75 we can see the higher variance in correction (when $\epsilon$ is 0.5) as now we are more interested in long term rewards than a short term one and when we increase it $\gamma$ = 0.95, we are giving very very high value to future rewards and thus the system is more tuned for future rewards. Which can be seen in case of Gamma = 0.95 and Epsilon = .5 system is ignoring Reward of 5 at grid position of 4,5 as system is looking for higher reward available at grid position of 4,8.
 
 *Combined Impact of Epsilon and Gamma*
 
 When we have $\epsilon$ as 0.5 and we keep on increasing $\gamma$, since model have balance exploration and exploitation and with every increase in $\gamma$ we can see that system is giving more and more value to future rewards thus we get large number of episodes converging at max reward in grid which is 10. 
 
-But when we have $\epsilon$ as 0.1 and even when we increase $\gamma$, system being exploiting (1-$\epsilon$ is high ) and not exploring more we can see higher number of episodes converging at reward grid 5 which is not gloabl optimal location.    
+But when we have $\epsilon$ as 0.1 and even when we increase $\gamma$, system being exploiting (1-$\epsilon$ is high ) and not exploring more we can see higher number of episodes converging at reward grid 5 which is not global optimal reward.    
 
 # Environment C (the effect of beta)
-
+ 
 **Your task is to investigate how the $\beta$ parameter affects the learned policy by running 10000 episodes of Q-learning with $\beta$ = 0, 0.2, 0.4, 0.66, $\epsilon$ = 0.5, $\gamma$ = 0.6 and $\alpha$ = 0.1**
 
 
@@ -428,6 +432,12 @@ for(j in c(0,0.2,0.4,0.66)){
 As we are increasing $\beta$, we can see that model will not move in chosen direction and thus its movement is getting more and more random and with $\beta$ at 0.6 (as movement in chosen direction have probability of (1-$\beta$)), it will mostly move towards right or left of chosen direction thus it might get harder for agent to reach optimal state in grid.
 
 Thus $\beta$ value can be used to cover uncertainty about action taken by agent in any given environment.
+
+To elaborate, since $\beta$ is the probability of slipping, when we increase it we are increasing the uncertainty of movement in the optimal direction. When $\beta$ is increased from 0 to o.66 we are most likely going to move to the left or right of the optimal direction (as the probability of moving towards optimal direction is 1 − $\beta$ = 0.36 now).
+
+It can be seen that with a $\beta$ value of 0.66, agent instead of trying to increase its rewards, tries to reduce the gain of additional negative reward.
+
+This could be understood from the example of a finance point of view. In the general case, we try to maximize reward (gain) for investment but when uncertainty because of events like Covid-19 is so high, the system is trying to manage net value such that its focus is now to avoid losses(negative reward). This can be understood by the robot’s decision to collide with the wall in grid position 1,1 instead of taking top or bottom direction as there was a possibility of slipping to a negative -1 reward state at 1,2.
 
 
 ***Question 2***
