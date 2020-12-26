@@ -39,7 +39,7 @@ The asia data set contains the following variables:
 
 
 
-##Task 2
+## Task 2
 
 **Hidden Markov Model**
 
@@ -47,6 +47,6 @@ The asia data set contains the following variables:
 
 Hidden Markov models are known for their applications to reinforcement learning and temporal pattern recognition such as speech, handwriting, gesture recognition, part-of-speech tagging, musical score following, partial discharges and bioinformatics.
 
-##Task 3 Reinforcement Learning
+## Task 3 Reinforcement Learning
 
-##Task 4 Gaussian Classification and Regression 
+## Task 4 Gaussian Classification and Regression 
